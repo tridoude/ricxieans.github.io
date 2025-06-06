@@ -87,7 +87,6 @@
             50% { transform: scale(1.01); box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1); }
             100% { transform: scale(1); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05); }
         }
-        /* Cập nhật CSS cho select để khắc phục lỗi */
         select {
             padding: 0.75rem 1.5rem; /* Tăng padding */
             border-radius: 12px; /* Bo tròn nhiều hơn */
@@ -100,11 +99,6 @@
             transition: all 0.2s ease-in-out;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             /* Bỏ các thuộc tính appearance và background-image để sử dụng mũi tên mặc định của trình duyệt */
-            /* appearance: none; */
-            /* background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%232c5282'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E"); */
-            /* background-repeat: no-repeat; */
-            /* background-position: right 0.75rem center; */
-            /* background-size: 1.2em; */
         }
         select:focus {
             border-color: #4c51bf;
@@ -118,15 +112,32 @@
             font-weight: 500;
             font-size: 1rem;
         }
+        #loadingIndicator {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #2c5282;
+            font-weight: 600;
+            z-index: 10;
+        }
+        #loadingIndicator.show {
+            display: block;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
-    <div class="container flex flex-col items-center space-y-10"> <!-- Tăng khoảng cách giữa các phần tử -->
+    <div class="container flex flex-col items-center space-y-10">
         <h1 class="text-5xl font-extrabold text-gray-800 mb-6 text-center leading-tight">
             Tạo Nhanh Câu Trả Lời Đánh Giá Ricxie
         </h1>
 
-        <div class="flex items-center space-x-6"> <!-- Tăng khoảng cách giữa label và select -->
+        <div class="flex items-center space-x-6">
             <label for="starFilter" class="text-xl font-semibold text-gray-700">Lọc theo số sao:</label>
             <select id="starFilter" class="shadow-md">
                 <option value="all">Tất cả</option>
@@ -139,7 +150,7 @@
         </div>
 
         <button id="getRandomAnswerButton" class="btn-primary focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-400">
-            LẤY CÂU TRẢ LỜI NGẪU NHIÊN
+            Lấy Câu Trả Lời Ngẫu Nhiên
         </button>
 
         <div id="answerDisplay" class="answer-display w-full max-w-2xl transition-all duration-300 ease-in-out">
@@ -149,129 +160,25 @@
         <div id="messageBox" class="hidden fixed bottom-6 right-6 message-box text-white transition-opacity duration-300 opacity-0">
             Đã sao chép vào bộ nhớ tạm!
         </div>
+
+        <div id="loadingIndicator">Đang tải câu trả lời...</div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // !!! QUAN TRỌNG: THAY THẾ ID VÀ API KEY CỦA BẠN TẠI ĐÂY !!!
+            // Đảm bảo Google Trang Tính của bạn được chia sẻ công khai (Anyone with the link can view)
+            const GOOGLE_SHEET_ID = '1NRm3wz2P8N12LG7QCQyvvJ2EhdcOj94YMu5FPQjaFag'; // THAY THẾ BẰNG ID TRANG TÍNH CỦA BẠN
+            const GOOGLE_API_KEY = 'AIzaSyBl36gs_eYYewCjec5z1nI_k7cDKJYPh6g';   // THAY THẾ BẰNG API KEY CỦA BẠN
+
             const getRandomAnswerButton = document.getElementById('getRandomAnswerButton');
             const answerDisplay = document.getElementById('answerDisplay');
             const messageBox = document.getElementById('messageBox');
             const starFilter = document.getElementById('starFilter');
+            const loadingIndicator = document.getElementById('loadingIndicator');
 
-            // Kho dữ liệu các câu trả lời với phân loại số sao
-            const allAnswers = [
-                // 1 Sao (Negative / Strong Apology)
-                { rating: 1, text: "Tụi mình xin lỗi thật lòng vì đã khiến bạn không hài lòng. Ricxie sẽ khắc phục ngay lập tức 😔" },
-                { rating: 1, text: "Xin lỗi bạn rất nhiều vì sự cố vừa qua! Tụi mình đang xử lý để không tái diễn!" },
-                { rating: 1, text: "Ricxie buồn thiệt sự vì làm bạn thất vọng 😢 Cảm ơn bạn đã nói thật, tụi mình sẽ sửa sai!" },
-                { rating: 1, text: "Thành thật xin lỗi bạn! Tụi mình đang kiểm tra lại toàn bộ để không xảy ra lần nữa!" },
-                { rating: 1, text: "Tụi mình ghi nhận mọi góp ý và đang nỗ lực thay đổi ngay ạ 😥" },
-                { rating: 1, text: "Bạn ơi, tụi mình rất tiếc vì trải nghiệm này chưa tốt. Mong được bù đắp cho bạn lần sau 🙏" },
-                { rating: 1, text: "Lỗi của tụi mình rồi, tụi mình nhận sai và sẽ cố gắng sửa thật nhanh 😞" },
-                { rating: 1, text: "Không có gì buồn bằng làm bạn thất vọng... Tụi mình xin lỗi và sẽ làm tốt hơn!" },
-                { rating: 1, text: "Cảm ơn bạn đã lên tiếng! Tụi mình sẽ không bỏ qua góp ý quan trọng này đâu!" },
-                { rating: 1, text: "Sự cố xảy ra là điều không ai muốn. Tụi mình hứa sẽ xử lý thật triệt để!" },
-                { rating: 1, text: "Xin lỗi vì sản phẩm không như mong đợi. Ricxie cam kết sẽ khắc phục nhanh chóng!" },
-                { rating: 1, text: "Chúng mình nghe và đang hành động rồi ạ! Mong bạn cho tụi mình cơ hội sửa sai 😢" },
-                { rating: 1, text: "Tụi mình đã tiếp nhận phản hồi và đang cải thiện mọi thứ. Cảm ơn bạn đã nói thật!" },
-                { rating: 1, text: "Chân thành xin lỗi nếu bạn thấy không hài lòng! Ricxie sẽ rút kinh nghiệm ngay 😞" },
-                { rating: 1, text: "Bạn không vui, tụi mình cũng buồn theo... Sẽ cố gắng làm lại cho đúng ạ!" },
-                { rating: 1, text: "Cảm ơn bạn đã nói lên cảm nhận thật! Tụi mình sẽ xem xét nghiêm túc vấn đề!" },
-                { rating: 1, text: "Tụi mình hiểu cảm giác không hài lòng của bạn. Hứa sẽ không để điều đó lặp lại!" },
-                { rating: 1, text: "Xin lỗi bạn rất nhiều! Mong được bạn cho cơ hội để chuộc lỗi lần sau 🙏" },
-                { rating: 1, text: "Chúng mình đang nghiêm túc xử lý vấn đề này rồi bạn ơi! Cảm ơn bạn đã phản ánh 💔" },
-                { rating: 1, text: "Dù buồn nhưng tụi mình rất biết ơn vì bạn đã nói thật! Ricxie sẽ sửa mình liền ạ!" },
-
-                // 2 Sao (Issues / Need for Improvement / Apologetic but less severe)
-                { rating: 2, text: "Ricxie rất tiếc vì đã làm bạn chưa hài lòng. Tụi mình sẽ kiểm tra và khắc phục ngay ạ!" },
-                { rating: 2, text: "Xin lỗi bạn vì trải nghiệm chưa trọn vẹn! Tụi mình sẽ nghiêm túc rút kinh nghiệm 🙏" },
-                { rating: 2, text: "Cảm ơn bạn đã phản hồi, tụi mình đang xem xét để cải thiện dịch vụ liền luôn!" },
-                { rating: 2, text: "Thành thật xin lỗi nếu sản phẩm chưa như ý. Tụi mình sẽ kiểm tra lại ngay nhen!" },
-                { rating: 2, text: "Tụi mình sẽ cố gắng từng chút để mang lại trải nghiệm tốt hơn cho bạn 😢" },
-                { rating: 2, text: "Bạn ơi, cho tụi mình thêm cơ hội sửa sai nha! Cảm ơn bạn đã góp ý rất nhiều 😞" },
-                { rating: 2, text: "Lỗi ở đâu Ricxie sẽ sửa liền! Mong bạn thông cảm và cho tụi mình cơ hội lần sau nha 🙌" },
-                { rating: 2, text: "Xin lỗi bạn nếu đã khiến bạn phiền lòng! Tụi mình ghi nhận và sẽ xử lý gấp 💔" },
-                { rating: 2, text: "Cảm ơn bạn đã nhắn gửi thẳng thắn, tụi mình rất trân trọng và sẽ hành động luôn!" },
-                { rating: 2, text: "Chắc chắn tụi mình sẽ cải thiện để không khiến bạn thất vọng nữa. Cảm ơn bạn nhiều!" },
-                { rating: 2, text: "Tụi mình xin lỗi nếu đã làm bạn chưa vui. Sẽ nghiêm túc sửa sai luôn ạ 😔" },
-                { rating: 2, text: "Bạn cho 2 sao là tụi mình lo liền! Sẽ rà soát lại mọi thứ để tốt hơn nha!" },
-                { rating: 2, text: "Không vui là điều tụi mình không bao giờ muốn 😢 Cảm ơn bạn vì đã chia sẻ thật lòng!" },
-                { rating: 2, text: "Dù kết quả chưa như ý, Ricxie cảm ơn bạn vì đã phản hồi rất chân thành!" },
-                { rating: 2, text: "Tụi mình hứa sẽ cải thiện nhanh chóng, mong bạn cho cơ hội sửa sai lần sau 😇" },
-                { rating: 2, text: "Thật lòng xin lỗi nếu sản phẩm chưa đạt chuẩn. Tụi mình sẽ không để điều này lặp lại!" },
-                { rating: 2, text: "Ricxie rất trân trọng sự góp ý của bạn. Sẽ kiểm tra và cải thiện ngay ạ 🙏" },
-                { rating: 2, text: "Bạn không hài lòng là tụi mình xót lắm luôn. Hứa sẽ khắc phục sớm nhất 😥" },
-                { rating: 2, text: "Tụi mình sẽ làm mọi cách để lần tới bạn thấy tốt hơn. Cảm ơn bạn nhiều 💖" },
-                { rating: 2, text: "Xin lỗi bạn nhiều ơi là nhiều! Tụi mình đang xử lý ngay để không làm bạn thất vọng nữa 😓" },
-
-                // 3 Sao (Neutral / Acknowledgment / General Improvement)
-                { rating: 3, text: "Cảm ơn bạn đã để lại đánh giá ạ! Tụi mình xin ghi nhận góp ý và sẽ cải thiện hơn trong lần tới 🙏" },
-                { rating: 3, text: "Ricxie xin lỗi nếu trải nghiệm chưa được như bạn mong đợi! Tụi mình sẽ cố gắng khắc phục nha 💪" },
-                { rating: 3, text: "Mong bạn thông cảm nếu có điều gì chưa ổn nhen! Cảm ơn bạn đã góp ý để tụi mình tốt hơn 💛" },
-                { rating: 3, text: "Cảm ơn bạn đã phản hồi! Ricxie sẽ kiểm tra và điều chỉnh để phục vụ bạn tốt hơn lần sau nha 😇" },
-                { rating: 3, text: "Thành thật xin lỗi nếu bạn chưa hài lòng. Ricxie sẽ xem lại và rút kinh nghiệm liền luôn ạ!" },
-                { rating: 3, text: "Góp ý từ bạn là điều rất quý giá với tụi mình! Cảm ơn bạn nhiều nghennn 💌" },
-                { rating: 3, text: "Cảm ơn bạn đã chia sẻ thẳng thắn! Tụi mình sẽ nghiêm túc cải thiện để phục vụ tốt hơn nữa nha 🛠️" },
-                { rating: 3, text: "Dù chưa trọn vẹn nhưng tụi mình cảm ơn bạn đã cho cơ hội được phục vụ 🥺" },
-                { rating: 3, text: "Ricxie xin lắng nghe và sẽ điều chỉnh để bạn hài lòng hơn ở lần tới! Cảm ơn bạn đã tin dùng 😍" },
-                { rating: 3, text: "Tụi mình sẽ cố gắng từng chút một để bạn có trải nghiệm tốt hơn lần sau! Cảm ơn bạn nhiều 😘" },
-                { rating: 3, text: "Cảm ơn bạn đã để lại đánh giá, tụi mình xin lỗi nếu chưa làm trọn vẹn. Hứa sẽ cải thiện nha!" },
-                { rating: 3, text: "Tụi mình nhận góp ý của bạn và sẽ nỗ lực hơn nữa. Mong được phục vụ bạn tốt hơn lần tới 🥰" },
-                { rating: 3, text: "Mỗi lời góp ý đều giúp Ricxie tiến bộ hơn! Cảm ơn bạn nhiều lắm ạ 💖" },
-                { rating: 3, text: "Chân thành cảm ơn bạn đã đánh giá! Ricxie sẽ xem lại và xử lý ngay nếu có sai sót 🙏" },
-                { rating: 3, text: "Tụi mình xin lỗi nếu sản phẩm chưa đúng kỳ vọng của bạn. Sẽ sửa đổi liền luôn nè!" },
-                { rating: 3, text: "Bạn đã giúp Ricxie nhìn ra điểm chưa tốt. Cảm ơn bạn nhiều nghen, tụi mình sẽ cải thiện liền!" },
-                { rating: 3, text: "Mong lần sau tụi mình sẽ mang lại trải nghiệm tốt hơn cho bạn! Cảm ơn vì đã góp ý chân thành nha 😊" },
-                { rating: 3, text: "Tụi mình sẽ cố gắng mỗi ngày để phục vụ bạn tốt hơn nữa! Rất cảm kích phản hồi từ bạn ❤️" },
-                { rating: 3, text: "Cảm ơn bạn đã không ngần ngại chia sẻ cảm nhận! Tụi mình trân trọng điều đó rất nhiều 💌" },
-                { rating: 3, text: "Ricxie hiểu và sẽ thay đổi để lần sau bạn hài lòng hơn nữa nha! Cảm ơn bạn iu nè! 💪" },
-
-                // 4 Sao (Positive / Appreciative)
-                { rating: 4, text: "Hihi 4 sao cũng đủ làm tụi mình vui rồi á! Cảm ơn bạn nhiều nghenn 💛" },
-                { rating: 4, text: "Cảm ơn bạn đã ủng hộ Ricxie nha! Nếu có gì tụi mình làm chưa tới, đừng ngại nhắn nhaaa 😉" },
-                { rating: 4, text: "Ui nhận được 4 sao là biết mình còn thiếu xíu xiu rồi 😅 Tụi mình sẽ cố gắng để lần sau được full nhen!" },
-                { rating: 4, text: "Cảm ơn bạn yêu nhiều nhaa! Ricxie sẽ cải thiện mỗi ngày để phục vụ bạn càng ngày càng đỉnh hơn 💫" },
-                { rating: 4, text: "4 sao từ bạn là tụi mình có động lực rồi á! Góp ý gì thêm cứ nói với Ricxie nhaaa 💌" },
-                { rating: 4, text: "Cảm ơn bạn đã ghé Ricxie nè! Tụi mình hy vọng lần tới sẽ được bạn 'nâng cấp' thêm 1 sao hihi 😋" },
-                { rating: 4, text: "4 sao của bạn là động lực xịn xò cho tụi mình luôn! Nếu bạn góp ý gì thêm thì tụi mình sẵn sàng lắng nghe ạ!" },
-                { rating: 4, text: "Ricxie ghi nhận và cảm ơn bạn thiệt nhiều nha! Hy vọng sẽ gặp lại bạn với trải nghiệm 5 sao nhaaa!" },
-                { rating: 4, text: "Cảm ơn bạn đã ghé và để lại đánh giá nè! Tụi mình sẽ không ngừng 'lên trình' để làm bạn hài lòng hơn nữa 💪" },
-                { rating: 4, text: "Ui còn gì vui hơn khi được bạn để lại 4 sao dễ thương như vậy chứ! Tụi mình cố gắng hơn nữa nhaaa 😍" },
-                { rating: 4, text: "Ricxie cảm ơn bạn rất nhiều vì đánh giá chân thành này nè! Mong được làm bạn hài lòng hơn nữa nha 💕" },
-                { rating: 4, text: "Bạn góp ý gì thêm cứ nhắn tụi mình liền nha, để lần tới là 5 sao thiệt xịn luôn 😎" },
-                { rating: 4, text: "4 sao của bạn khiến Ricxie biết mình cần cố thêm chút nữa! Cảm ơn bạn nhiều nhen 🥰" },
-                { rating: 4, text: "Tụi mình rất vui khi bạn hài lòng gần như trọn vẹn! Hẹn bạn lần sau xịn hơn luôn nghen ✨" },
-                { rating: 4, text: "Review từ bạn làm tụi mình sáng mắt ra luôn á! Sẽ cố gắng chăm chút kỹ hơn nữa nha 💡" },
-                { rating: 4, text: "Mỗi phản hồi đều quý giá với tụi mình, cảm ơn bạn đã chia sẻ nhen 💌" },
-                { rating: 4, text: "Cảm ơn bạn đã ghé Ricxie và để lại 4 sao dễ thương! Hẹn gặp lại bạn hoài hoài luôn nè 🛍️" },
-                { rating: 4, text: "Mình sẽ cải thiện từng chút một để bạn có trải nghiệm 5 sao tuyệt đối nha!" },
-                { rating: 4, text: "Ricxie luôn sẵn sàng nghe bạn góp ý để hoàn thiện hơn nè! Cảm ơn bạn iu nhiều 💖" },
-                { rating: 4, text: "Bạn yên tâm, tụi mình sẽ dùng 4 sao này làm động lực chạy nước rút tới 5 sao liền luôn! 🚀" },
-
-                // 5 Sao (Very Positive)
-                { rating: 5, text: "Trời ơi, 5 sao luôn á! Cảm ơn bạn iu siêu nhiều, tụi mình vui hết biết luôn nèee 🥰" },
-                { rating: 5, text: "Nhận được review xịn như vầy là muốn rủ cả team đi ăn mừng luôn á! Cảm ơn bạn nhiều nghen 💕" },
-                { rating: 5, text: "Được khen một cái mà cười cả ngày luôn 😝 Cảm ơn bạn thiệt nhiều nhen!" },
-                { rating: 5, text: "Ui cảm ơn bạn iu đã thả tim siêu to cho Ricxie nhaaa 💖 Hẹn bạn lần tới siêu xịn nữa nè!" },
-                { rating: 5, text: "Cảm ơn bạn quá chừng quá đỗi luôn! Tụi mình sẽ tiếp tục 'xịn hóa' để lần nào cũng làm bạn vui 😎" },
-                { rating: 5, text: "Awww 5 sao từ bạn làm Ricxie 'ấm lòng' ghê luôn á 🥹" },
-                { rating: 5, text: "Cảm ơn bạn nhiều ơi là nhiều vì đã yêu thương Ricxie như vậy nèee!" },
-                { rating: 5, text: "Tụi mình mà có thể gửi hoa thì gửi luôn rồi đó 🌸 5 sao của bạn làm ngày tụi mình rực rỡ luôn!" },
-                { rating: 5, text: "Review đáng yêu như bạn thì tụi mình chỉ biết ôm tim thôi đó 💗 Cảm ơn bạn nhaa!" },
-                { rating: 5, text: "Đánh giá xịn sò quá trời luôn á, cảm ơn bạn iu nhiều lắm! Mong được gặp bạn hoài hoài luôn đó 🤗" },
-                { rating: 5, text: "5 sao của bạn là vitamin tinh thần đó nghen! Cảm ơn bạn hết lòng luôn 💛" },
-                { rating: 5, text: "Tụi mình hạnh phúc quá đi mất! Cảm ơn bạn vì đã tin tưởng Ricxie nhen 😍" },
-                { rating: 5, text: "Bạn ơi, đánh giá này dễ thương xỉu á! Ricxie ghiền quá trời luôn 💕" },
-                { rating: 5, text: "Nhận được 5 sao từ bạn mà tụi mình 'chớp mắt' không tin luôn á, cảm ơn nghennn 🌟" },
-                { rating: 5, text: "Cảm ơn bạn rất nhiều vì đã dành tình cảm cho Ricxie! Mãi iu bạn 💝" },
-                { rating: 5, text: "Tụi mình ghi nhận từng yêu thương bạn gửi tới, cảm ơn bạn rấttt nhiều nha!" },
-                { rating: 5, text: "Mỗi lần được khen là Ricxie lại có thêm siêu năng lượng 💪 Cảm ơn bạn nhen!" },
-                { rating: 5, text: "Cảm ơn bạn vì đã cho tụi mình một ngày đầy nắng luôn nè 🌞" },
-                { rating: 5, text: "Tụi mình không dám ngủ quên trên lời khen đâu, sẽ cố gắng xịn hơn nữa nha!" },
-                { rating: 5, text: "Mừng hú hồn khi thấy 5 sao từ bạn luôn á! Thương bạn nhiều lắm 😘" }
-            ];
-
-            let filteredAnswers = [...allAnswers]; // Khởi tạo với tất cả câu trả lời
+            let allAnswers = []; // Sẽ được điền từ Google Sheet
+            let filteredAnswers = []; // Danh sách câu trả lời đã lọc
 
             // Hàm hiển thị thông báo
             function showMessageBox(message) {
@@ -315,6 +222,46 @@
                 document.body.removeChild(textarea);
             }
 
+            // Hàm để tải câu trả lời từ Google Sheet
+            async function fetchAnswersFromSheet() {
+                loadingIndicator.classList.add('show');
+                answerDisplay.innerHTML = `<p class="text-gray-400">Đang tải câu trả lời từ Google Trang Tính...</p>`;
+                allAnswers = []; // Xóa dữ liệu cũ
+
+                const sheetNames = ['1_star', '2_star', '3_star', '4_star', '5_star'];
+
+                try {
+                    for (let i = 0; i < sheetNames.length; i++) {
+                        const sheetName = sheetNames[i];
+                        const rating = i + 1;
+                        const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${sheetName}!A:A?key=${GOOGLE_API_KEY}`;
+                        const response = await fetch(url);
+
+                        if (!response.ok) {
+                            const errorText = await response.text(); // Lấy thông báo lỗi chi tiết hơn từ phản hồi
+                            throw new Error(`Lỗi khi tải dữ liệu từ sheet '${sheetName}': ${response.status} ${response.statusText}. Chi tiết: ${errorText}`);
+                        }
+
+                        const data = await response.json();
+                        if (data.values) {
+                            data.values.forEach(row => {
+                                if (row[0]) { // Đảm bảo ô không rỗng
+                                    allAnswers.push({ rating: rating, text: row[0] });
+                                }
+                            });
+                        }
+                    }
+                    console.log("Đã tải xong tất cả câu trả lời:", allAnswers);
+                    loadingIndicator.classList.remove('show');
+                    // Cập nhật bộ lọc sau khi tải xong
+                    updateFilteredAnswers();
+                } catch (error) {
+                    console.error('Lỗi khi tải dữ liệu từ Google Sheet:', error);
+                    answerDisplay.innerHTML = `<p class="text-red-500">Lỗi: Không thể tải câu trả lời từ Google Trang Tính. Vui lòng kiểm tra ID trang tính, API Key và quyền truy cập. Chi tiết lỗi: ${error.message}</p>`;
+                    loadingIndicator.classList.remove('show');
+                }
+            }
+
             // Hàm cập nhật danh sách câu trả lời dựa trên bộ lọc
             function updateFilteredAnswers() {
                 const selectedRating = starFilter.value;
@@ -334,7 +281,7 @@
             // Xử lý sự kiện khi nhấn nút "Lấy câu trả lời ngẫu nhiên"
             getRandomAnswerButton.addEventListener('click', () => {
                 if (filteredAnswers.length === 0) {
-                    answerDisplay.innerHTML = `<p class="text-red-500">Không có câu trả lời nào phù hợp với mức sao đã chọn.</p>`;
+                    answerDisplay.innerHTML = `<p class="text-red-500">Không có câu trả lời nào phù hợp với mức sao đã chọn. Vui lòng kiểm tra Google Trang Tính hoặc chọn 'Tất cả'.</p>`;
                     return;
                 }
 
@@ -350,8 +297,8 @@
                 copyToClipboard(randomAnswer);
             });
 
-            // Khởi tạo bộ lọc khi tải trang
-            updateFilteredAnswers();
+            // Khởi tạo ứng dụng: Tải câu trả lời từ Google Sheet khi trang được tải
+            fetchAnswersFromSheet();
         });
     </script>
 </body>
