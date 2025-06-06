@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ứng dụng trả lời đánh giá</title>
-<link rel="icon" href="icon.png" type="image/png">
     <!-- Tải Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
@@ -88,23 +87,76 @@
             50% { transform: scale(1.01); box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1); }
             100% { transform: scale(1); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05); }
         }
-        select {
-            padding: 0.75rem 1.5rem; /* Tăng padding */
-            border-radius: 12px; /* Bo tròn nhiều hơn */
-            border: 2px solid #99c2e0; /* Viền đậm hơn */
-            background-color: #f7fcff; /* Nền sáng hơn */
-            font-size: 1.05rem; /* Chữ lớn hơn */
-            color: #2d3748;
-            outline: none;
-            cursor: pointer;
+
+        /* Styling cho các nút lọc sao mới */
+        .filter-button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 9999px; /* Pill shape */
+            font-weight: 600;
+            font-size: 0.95rem;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-            /* Bỏ các thuộc tính appearance và background-image để sử dụng mũi tên mặc định của trình duyệt */
+            cursor: pointer;
+            border: 2px solid transparent;
+            background-color: #e2e8f0; /* Light gray for inactive */
+            color: #4a5568; /* Darker gray text */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
-        select:focus {
-            border-color: #4c51bf;
-            box-shadow: 0 0 0 4px rgba(76, 81, 191, 0.3);
+        .filter-button:hover {
+            background-color: #cbd5e0; /* Slightly darker on hover */
+            transform: translateY(-1px);
         }
+        /* Active states for each star rating */
+        .filter-button.active-all {
+            background-image: linear-gradient(to right, #4c51bf, #667eea); /* Default/All gradient */
+            color: white;
+            border-color: #6366f1;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+        .filter-button.active-1-star {
+            background-image: linear-gradient(to right, #ef4444, #f97316); /* Red to Orange */
+            color: white;
+            border-color: #dc2626;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+        .filter-button.active-2-star {
+            background-image: linear-gradient(to right, #f97316, #fcd34d); /* Orange to Yellow */
+            color: white;
+            border-color: #ea580c;
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);
+            transform: translateY(-2px);
+        }
+        .filter-button.active-3-star {
+            background-image: linear-gradient(to right, #fcd34d, #a78bfa); /* Yellow to Light Purple */
+            color: white;
+            border-color: #f59e0b;
+            box-shadow: 0 4px 10px rgba(252, 211, 77, 0.3);
+            transform: translateY(-2px);
+        }
+        .filter-button.active-4-star {
+            background-image: linear-gradient(to right, #a78bfa, #8b5cf6); /* Light Purple to Purple-Blue */
+            color: white;
+            border-color: #7c3aed;
+            box-shadow: 0 4px 10px rgba(167, 139, 250, 0.3);
+            transform: translateY(-2px);
+        }
+        .filter-button.active-5-star {
+            background-image: linear-gradient(to right, #8b5cf6, #22c55e); /* Purple-Blue to Green */
+            color: white;
+            border-color: #6d28d9;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        .filter-button.active-all:hover,
+        .filter-button.active-1-star:hover,
+        .filter-button.active-2-star:hover,
+        .filter-button.active-3-star:hover,
+        .filter-button.active-4-star:hover,
+        .filter-button.active-5-star:hover {
+             transform: translateY(-2px) scale(1.01); /* Keep same transform on hover when active */
+        }
+
         .message-box {
             background-color: #48bb78; /* Màu xanh lá cây đậm hơn */
             box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
@@ -130,24 +182,34 @@
         #loadingIndicator.show {
             display: block;
         }
+        /* New CSS for animated title */
+        .animated-title {
+            animation: bounceIn 1s ease-out forwards;
+            display: inline-block; /* To allow transform effects */
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
     <div class="container flex flex-col items-center space-y-10">
-        <h1 class="text-5xl font-extrabold text-gray-800 mb-6 text-center leading-tight">
-            Tạo Nhanh Câu Trả Lời Đánh Giá Ricxie
+        <h1 class="text-5xl font-extrabold text-gray-800 mb-6 text-center leading-tight animated-title">
+            LẤY CÂU TRẢ LỜI TỰ ĐỘNG RICXIE
         </h1>
 
-        <div class="flex items-center space-x-6">
-            <label for="starFilter" class="text-xl font-semibold text-gray-700">Lọc theo số sao:</label>
-            <select id="starFilter" class="shadow-md">
-                <option value="all">Tất cả</option>
-                <option value="1">1 Sao</option>
-                <option value="2">2 Sao</option>
-                <option value="3">3 Sao</option>
-                <option value="4">4 Sao</option>
-                <option value="5">5 Sao</option>
-            </select>
+        <div class="flex items-center space-x-4 flex-wrap justify-center"> <!-- Responsive wrapping for buttons -->
+            <label class="text-xl font-semibold text-gray-700 mr-4 mb-2 md:mb-0">Lọc theo số sao:</label>
+            <div id="filterButtons" class="flex flex-wrap gap-3"> <!-- Wrapper for filter buttons -->
+                <button class="filter-button active-all" data-rating="all">Tất cả</button>
+                <button class="filter-button" data-rating="1">1 Sao</button>
+                <button class="filter-button" data-rating="2">2 Sao</button>
+                <button class="filter-button" data-rating="3">3 Sao</button>
+                <button class="filter-button" data-rating="4">4 Sao</button>
+                <button class="filter-button" data-rating="5">5 Sao</button>
+            </div>
         </div>
 
         <button id="getRandomAnswerButton" class="btn-primary focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-400">
@@ -175,11 +237,12 @@
             const getRandomAnswerButton = document.getElementById('getRandomAnswerButton');
             const answerDisplay = document.getElementById('answerDisplay');
             const messageBox = document.getElementById('messageBox');
-            const starFilter = document.getElementById('starFilter');
+            const filterButtonsContainer = document.getElementById('filterButtons');
             const loadingIndicator = document.getElementById('loadingIndicator');
 
             let allAnswers = []; // Sẽ được điền từ Google Sheet
             let filteredAnswers = []; // Danh sách câu trả lời đã lọc
+            let currentSelectedRating = 'all'; // Mức sao hiện tại đang được chọn
 
             // Hàm hiển thị thông báo
             function showMessageBox(message) {
@@ -254,7 +317,7 @@
                     }
                     console.log("Đã tải xong tất cả câu trả lời:", allAnswers);
                     loadingIndicator.classList.remove('show');
-                    // Cập nhật bộ lọc sau khi tải xong
+                    // Cập nhật bộ lọc sau khi tải xong, sử dụng mức sao hiện tại
                     updateFilteredAnswers();
                 } catch (error) {
                     console.error('Lỗi khi tải dữ liệu từ Google Sheet:', error);
@@ -265,19 +328,38 @@
 
             // Hàm cập nhật danh sách câu trả lời dựa trên bộ lọc
             function updateFilteredAnswers() {
-                const selectedRating = starFilter.value;
-                if (selectedRating === 'all') {
+                if (currentSelectedRating === 'all') {
                     filteredAnswers = [...allAnswers];
                 } else {
-                    const ratingNum = parseInt(selectedRating);
+                    const ratingNum = parseInt(currentSelectedRating);
                     filteredAnswers = allAnswers.filter(answer => answer.rating === ratingNum);
                 }
                 // Reset hiển thị câu trả lời khi bộ lọc thay đổi
                 answerDisplay.innerHTML = `<p class="text-gray-500">Chọn số sao và nhấn nút để lấy một câu trả lời.</p>`;
             }
 
-            // Xử lý sự kiện khi bộ lọc số sao thay đổi
-            starFilter.addEventListener('change', updateFilteredAnswers);
+            // Xử lý sự kiện khi nhấn nút lọc sao
+            filterButtonsContainer.addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.classList.contains('filter-button')) {
+                    // Xóa trạng thái active của tất cả các nút
+                    document.querySelectorAll('.filter-button').forEach(button => {
+                        button.classList.remove('active-all', 'active-1-star', 'active-2-star', 'active-3-star', 'active-4-star', 'active-5-star');
+                    });
+
+                    // Thêm trạng thái active cho nút được nhấn dựa trên data-rating
+                    const rating = target.dataset.rating;
+                    if (rating === 'all') {
+                        target.classList.add('active-all');
+                    } else {
+                        target.classList.add(`active-${rating}-star`);
+                    }
+
+                    // Cập nhật mức sao đã chọn
+                    currentSelectedRating = rating;
+                    updateFilteredAnswers(); // Cập nhật danh sách câu trả lời đã lọc
+                }
+            });
 
             // Xử lý sự kiện khi nhấn nút "Lấy câu trả lời ngẫu nhiên"
             getRandomAnswerButton.addEventListener('click', () => {
