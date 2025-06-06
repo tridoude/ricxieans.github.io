@@ -6,72 +6,129 @@
     <title>Ứng dụng trả lời đánh giá</title>
     <!-- Tải Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Nền nhẹ nhàng */
+            background-color: #e0f2f7; /* Nền xanh nhạt, mát mẻ */
+            background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%); /* Gradient nhẹ */
         }
         .container {
             max-width: 800px;
             margin: 4rem auto;
-            padding: 2rem;
+            padding: 3rem; /* Tăng padding */
             background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
+            border-radius: 20px; /* Bo tròn nhiều hơn */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Bóng đổ mạnh hơn */
+            border: 1px solid #d1e8ef; /* Viền tinh tế */
+            animation: fadeIn 0.8s ease-out; /* Hiệu ứng fade-in */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .btn-primary {
-            background-image: linear-gradient(to right, #6366f1, #8b5cf6); /* Gradient tím-xanh */
+            background-image: linear-gradient(to right, #4c51bf, #667eea); /* Gradient tím-xanh đẹp hơn */
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+            padding: 1rem 2.5rem; /* Tăng padding nút */
+            border-radius: 12px; /* Bo tròn nhiều hơn */
+            font-weight: 700; /* Đậm hơn */
+            font-size: 1.125rem; /* Chữ lớn hơn */
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 6px 15px rgba(76, 81, 191, 0.4); /* Bóng đổ mạnh hơn */
+            position: relative; /* Cho hiệu ứng hover */
+            overflow: hidden; /* Che đi phần overflow của hiệu ứng */
         }
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
+            transform: translateY(-3px) scale(1.02); /* Nhấn nhá khi hover */
+            box-shadow: 0 8px 20px rgba(76, 81, 191, 0.5);
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            transition: all 0.6s ease-out;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 0;
+        }
+        .btn-primary:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0;
         }
         .answer-display {
-            background-color: #f7fafc;
-            border: 1px solid #cbd5e0;
-            border-radius: 8px;
-            padding: 1.5rem;
-            min-height: 100px;
+            background-color: #f0f8ff; /* Nền xanh trắng nhẹ */
+            border: 2px solid #a7d9f2; /* Viền màu xanh nổi bật */
+            border-radius: 12px;
+            padding: 2rem; /* Tăng padding */
+            min-height: 120px; /* Tăng chiều cao tối thiểu */
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 1.125rem; /* text-lg */
-            color: #2d3748; /* dark gray */
+            font-size: 1.25rem; /* text-xl */
+            color: #2c5282; /* Màu chữ xanh đậm */
             font-style: italic;
-            word-break: break-word; /* Đảm bảo ngắt dòng cho câu trả lời dài */
+            word-break: break-word;
+            line-height: 1.6; /* Tăng khoảng cách dòng */
+            transition: all 0.3s ease-in-out;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05); /* Bóng đổ bên trong */
         }
+        .answer-display.active {
+            animation: pulseEffect 0.5s ease-out; /* Hiệu ứng nhấp nháy khi hiển thị */
+        }
+        @keyframes pulseEffect {
+            0% { transform: scale(1); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05); }
+            50% { transform: scale(1.01); box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1); }
+            100% { transform: scale(1); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05); }
+        }
+        /* Cập nhật CSS cho select để khắc phục lỗi */
         select {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid #cbd5e0;
-            background-color: #f7fafc;
-            font-size: 1rem;
+            padding: 0.75rem 1.5rem; /* Tăng padding */
+            border-radius: 12px; /* Bo tròn nhiều hơn */
+            border: 2px solid #99c2e0; /* Viền đậm hơn */
+            background-color: #f7fcff; /* Nền sáng hơn */
+            font-size: 1.05rem; /* Chữ lớn hơn */
             color: #2d3748;
             outline: none;
             cursor: pointer;
-            transition: border-color 0.2s ease-in-out;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            /* Bỏ các thuộc tính appearance và background-image để sử dụng mũi tên mặc định của trình duyệt */
+            /* appearance: none; */
+            /* background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%232c5282'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E"); */
+            /* background-repeat: no-repeat; */
+            /* background-position: right 0.75rem center; */
+            /* background-size: 1.2em; */
         }
         select:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            border-color: #4c51bf;
+            box-shadow: 0 0 0 4px rgba(76, 81, 191, 0.3);
+        }
+        .message-box {
+            background-color: #48bb78; /* Màu xanh lá cây đậm hơn */
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+            border-radius: 10px;
+            padding: 0.8rem 1.8rem;
+            font-weight: 500;
+            font-size: 1rem;
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
-    <div class="container flex flex-col items-center space-y-8">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Tạo câu trả lời đánh giá Ricxie</h1>
+    <div class="container flex flex-col items-center space-y-10"> <!-- Tăng khoảng cách giữa các phần tử -->
+        <h1 class="text-5xl font-extrabold text-gray-800 mb-6 text-center leading-tight">
+            Tạo Nhanh Câu Trả Lời Đánh Giá Ricxie
+        </h1>
 
-        <div class="flex items-center space-x-4">
-            <label for="starFilter" class="text-lg font-medium text-gray-700">Lọc theo số sao:</label>
-            <select id="starFilter" class="shadow-sm">
+        <div class="flex items-center space-x-6"> <!-- Tăng khoảng cách giữa label và select -->
+            <label for="starFilter" class="text-xl font-semibold text-gray-700">Lọc theo số sao:</label>
+            <select id="starFilter" class="shadow-md">
                 <option value="all">Tất cả</option>
                 <option value="1">1 Sao</option>
                 <option value="2">2 Sao</option>
@@ -81,15 +138,15 @@
             </select>
         </div>
 
-        <button id="getRandomAnswerButton" class="btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Lấy câu trả lời ngẫu nhiên
+        <button id="getRandomAnswerButton" class="btn-primary focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-400">
+            Lấy Câu Trả Lời Ngẫu Nhiên
         </button>
 
-        <div id="answerDisplay" class="answer-display w-full max-w-lg transition-all duration-300 ease-in-out">
+        <div id="answerDisplay" class="answer-display w-full max-w-2xl transition-all duration-300 ease-in-out">
             <p class="text-gray-500">Chọn số sao và nhấn nút để lấy một câu trả lời.</p>
         </div>
 
-        <div id="messageBox" class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg transition-opacity duration-300 opacity-0">
+        <div id="messageBox" class="hidden fixed bottom-6 right-6 message-box text-white transition-opacity duration-300 opacity-0">
             Đã sao chép vào bộ nhớ tạm!
         </div>
     </div>
@@ -104,7 +161,7 @@
             // Kho dữ liệu các câu trả lời với phân loại số sao
             const allAnswers = [
                 // 1 Sao (Negative / Strong Apology)
-              { rating: 1, text: "Tụi mình xin lỗi thật lòng vì đã khiến bạn không hài lòng. Ricxie sẽ khắc phục ngay lập tức 😔" },
+                { rating: 1, text: "Tụi mình xin lỗi thật lòng vì đã khiến bạn không hài lòng. Ricxie sẽ khắc phục ngay lập tức 😔" },
                 { rating: 1, text: "Xin lỗi bạn rất nhiều vì sự cố vừa qua! Tụi mình đang xử lý để không tái diễn!" },
                 { rating: 1, text: "Ricxie buồn thiệt sự vì làm bạn thất vọng 😢 Cảm ơn bạn đã nói thật, tụi mình sẽ sửa sai!" },
                 { rating: 1, text: "Thành thật xin lỗi bạn! Tụi mình đang kiểm tra lại toàn bộ để không xảy ra lần nữa!" },
@@ -121,12 +178,12 @@
                 { rating: 1, text: "Bạn không vui, tụi mình cũng buồn theo... Sẽ cố gắng làm lại cho đúng ạ!" },
                 { rating: 1, text: "Cảm ơn bạn đã nói lên cảm nhận thật! Tụi mình sẽ xem xét nghiêm túc vấn đề!" },
                 { rating: 1, text: "Tụi mình hiểu cảm giác không hài lòng của bạn. Hứa sẽ không để điều đó lặp lại!" },
-                { rating: 1, text: "Ricxie xin lỗi bạn rất nhiều! Mong được bạn cho cơ hội để chuộc lỗi lần sau 🙏" },
+                { rating: 1, text: "Xin lỗi bạn rất nhiều! Mong được bạn cho cơ hội để chuộc lỗi lần sau 🙏" },
                 { rating: 1, text: "Chúng mình đang nghiêm túc xử lý vấn đề này rồi bạn ơi! Cảm ơn bạn đã phản ánh 💔" },
                 { rating: 1, text: "Dù buồn nhưng tụi mình rất biết ơn vì bạn đã nói thật! Ricxie sẽ sửa mình liền ạ!" },
 
                 // 2 Sao (Issues / Need for Improvement / Apologetic but less severe)
-                 { rating: 2, text: "Ricxie rất tiếc vì đã làm bạn chưa hài lòng. Tụi mình sẽ kiểm tra và khắc phục ngay ạ!" },
+                { rating: 2, text: "Ricxie rất tiếc vì đã làm bạn chưa hài lòng. Tụi mình sẽ kiểm tra và khắc phục ngay ạ!" },
                 { rating: 2, text: "Xin lỗi bạn vì trải nghiệm chưa trọn vẹn! Tụi mình sẽ nghiêm túc rút kinh nghiệm 🙏" },
                 { rating: 2, text: "Cảm ơn bạn đã phản hồi, tụi mình đang xem xét để cải thiện dịch vụ liền luôn!" },
                 { rating: 2, text: "Thành thật xin lỗi nếu sản phẩm chưa như ý. Tụi mình sẽ kiểm tra lại ngay nhen!" },
@@ -167,7 +224,7 @@
                 { rating: 3, text: "Mong lần sau tụi mình sẽ mang lại trải nghiệm tốt hơn cho bạn! Cảm ơn vì đã góp ý chân thành nha 😊" },
                 { rating: 3, text: "Tụi mình sẽ cố gắng mỗi ngày để phục vụ bạn tốt hơn nữa! Rất cảm kích phản hồi từ bạn ❤️" },
                 { rating: 3, text: "Cảm ơn bạn đã không ngần ngại chia sẻ cảm nhận! Tụi mình trân trọng điều đó rất nhiều 💌" },
-                { rating: 3, text: "Ricxie hiểu và sẽ thay đổi để lần sau bạn hài lòng hơn nữa nha! Cảm ơn bạn iu nè! 💪" },	
+                { rating: 3, text: "Ricxie hiểu và sẽ thay đổi để lần sau bạn hài lòng hơn nữa nha! Cảm ơn bạn iu nè! 💪" },
 
                 // 4 Sao (Positive / Appreciative)
                 { rating: 4, text: "Hihi 4 sao cũng đủ làm tụi mình vui rồi á! Cảm ơn bạn nhiều nghenn 💛" },
@@ -191,8 +248,8 @@
                 { rating: 4, text: "Ricxie luôn sẵn sàng nghe bạn góp ý để hoàn thiện hơn nè! Cảm ơn bạn iu nhiều 💖" },
                 { rating: 4, text: "Bạn yên tâm, tụi mình sẽ dùng 4 sao này làm động lực chạy nước rút tới 5 sao liền luôn! 🚀" },
 
-                // 5 Sao (Very Positive - Added a generic one)
-                  { rating: 5, text: "Trời ơi, 5 sao luôn á! Cảm ơn bạn iu siêu nhiều, tụi mình vui hết biết luôn nèee 🥰" },
+                // 5 Sao (Very Positive)
+                { rating: 5, text: "Trời ơi, 5 sao luôn á! Cảm ơn bạn iu siêu nhiều, tụi mình vui hết biết luôn nèee 🥰" },
                 { rating: 5, text: "Nhận được review xịn như vầy là muốn rủ cả team đi ăn mừng luôn á! Cảm ơn bạn nhiều nghen 💕" },
                 { rating: 5, text: "Được khen một cái mà cười cả ngày luôn 😝 Cảm ơn bạn thiệt nhiều nhen!" },
                 { rating: 5, text: "Ui cảm ơn bạn iu đã thả tim siêu to cho Ricxie nhaaa 💖 Hẹn bạn lần tới siêu xịn nữa nè!" },
@@ -200,7 +257,7 @@
                 { rating: 5, text: "Awww 5 sao từ bạn làm Ricxie 'ấm lòng' ghê luôn á 🥹" },
                 { rating: 5, text: "Cảm ơn bạn nhiều ơi là nhiều vì đã yêu thương Ricxie như vậy nèee!" },
                 { rating: 5, text: "Tụi mình mà có thể gửi hoa thì gửi luôn rồi đó 🌸 5 sao của bạn làm ngày tụi mình rực rỡ luôn!" },
-                { rating: 5, text: "Review đáng yêu như bạn thì tụi mình chỉ biết ôm tim thôi đó 💗 Cảm ơn bạn nhaa!" },
+                { rating: 5, text: "Review đáng yêu như bạn thì tụi mình chỉ biết ôm tim thôi đó � Cảm ơn bạn nhaa!" },
                 { rating: 5, text: "Đánh giá xịn sò quá trời luôn á, cảm ơn bạn iu nhiều lắm! Mong được gặp bạn hoài hoài luôn đó 🤗" },
                 { rating: 5, text: "5 sao của bạn là vitamin tinh thần đó nghen! Cảm ơn bạn hết lòng luôn 💛" },
                 { rating: 5, text: "Tụi mình hạnh phúc quá đi mất! Cảm ơn bạn vì đã tin tưởng Ricxie nhen 😍" },
@@ -286,6 +343,8 @@
                 const randomAnswer = filteredAnswers[randomIndex].text;
 
                 answerDisplay.innerHTML = `<p>${randomAnswer}</p>`; // Hiển thị câu trả lời
+                answerDisplay.classList.add('active'); // Thêm class active để kích hoạt hiệu ứng
+                setTimeout(() => answerDisplay.classList.remove('active'), 500); // Gỡ bỏ class sau hiệu ứng
 
                 // Tự động sao chép câu trả lời vào clipboard
                 copyToClipboard(randomAnswer);
@@ -297,3 +356,4 @@
     </script>
 </body>
 </html>
+�
